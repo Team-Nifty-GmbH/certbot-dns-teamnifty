@@ -13,14 +13,14 @@ Besides the plugin, this repository documents how to use the same API with
 pip install certbot-dns-teamnifty
 ```
 
-If certbot runs as a snap, it only loads third party plugins after you allow it:
+The plugin is published on PyPI only. It cannot be loaded by the certbot snap
+(the snap's Python is read-only and `trust-plugin-with-root` only applies to
+plugin snaps), so use certbot installed with pip, for example in a venv:
 
 ```sh
-sudo snap set certbot trust-plugin-with-root=ok
+python3 -m venv /opt/certbot
+/opt/certbot/bin/pip install certbot certbot-dns-teamnifty
 ```
-
-The pip package then has to be installed into the snap's own Python environment.
-Where that is a hassle, use certbot from pip instead of the snap.
 
 Check that certbot sees the plugin:
 
@@ -83,12 +83,15 @@ A failing cleanup is only logged, it never fails an issuance that already worked
 
 ```sh
 HTTPREQ_ENDPOINT=https://flux.example.com/api/dns-01 \
+HTTPREQ_USERNAME=token \
 HTTPREQ_PASSWORD=<your token> \
 lego --dns httpreq --domains example.com --domains '*.example.com' \
   --email you@example.com run
 ```
 
-The API accepts the token as the HTTP Basic password, the user name is ignored.
+lego sends Basic auth only when both `HTTPREQ_USERNAME` and `HTTPREQ_PASSWORD` are
+set, so set both. The API takes the token from the password, the user name is not
+checked (use any value).
 Leave `HTTPREQ_MODE` unset (not `RAW`).
 
 ## acme.sh

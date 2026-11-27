@@ -1,3 +1,4 @@
+import unittest
 from unittest import mock
 
 import pytest
@@ -122,14 +123,6 @@ def test_default_propagation_seconds_is_120():
     add.assert_any_call("propagation-seconds", type=int, default=120, help=mock.ANY)
 
 
-class TestBase(dns_test_common.BaseAuthenticatorTest):
-    def setup_method(self):
+class TestBase(dns_test_common.BaseAuthenticatorTest, unittest.TestCase):
+    def setUp(self):
         self.auth = Authenticator(mock.MagicMock(), "dns-teamnifty")
-
-    def test_more_info(self):
-        assert isinstance(self.auth.more_info(), str)
-
-    def test_get_chall_pref(self):
-        from acme import challenges
-
-        assert self.auth.get_chall_pref("example.org") == [challenges.DNS01]

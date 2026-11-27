@@ -53,9 +53,17 @@ _teamnifty_call() {
     _err "Request to $_action failed: $response"
     return 1
   fi
-  # _post only fails on transport errors; the server reports problems as {"error": ...}
-  if _contains "$response" '"error"'; then
-    _err "dns-01 API error: $response"
+  # _post only fails on transport errors, so check the HTTP status (file $HTTP_HEADER) ourselves.
+  _status="$(_head_n 1 <"$HTTP_HEADER" | cut -d ' ' -f 2 | tr -d '\r')"
+  case "$_status" in
+  2??) ;;
+  *)
+    _err "dns-01 API error (HTTP ${_status:-unknown}): $response"
+    return 1
+    ;;
+  esac
+  if [ -z "$response" ]; then
+    _err "Empty response from dns-01 API"
     return 1
   fi
   return 0
